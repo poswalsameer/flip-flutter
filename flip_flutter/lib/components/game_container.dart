@@ -27,25 +27,19 @@ class GameContainerComponent extends StatelessWidget {
           Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Top coin flip area
-              Expanded(
-                child: Center(
-                  child: _buildCoinArea(),
-                ),
-              ),
+              // MAIN COIN AREA
+              Expanded(child: Center(child: _buildCoinArea())),
 
-              // Bottom history part
+              // HISTORY OF BETS
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: HistoryComponent(
-                  currentBetResults: currentBetResults,
-                ),
+                child: HistoryComponent(currentBetResults: currentBetResults),
               ),
-              const SizedBox(height: 16), // Add some bottom padding
+              const SizedBox(height: 16),
             ],
           ),
 
-          // Winning screen overlay
+          // WINNING SCREEN
           if (isBetEnded) _buildWinningOverlay(),
         ],
       ),
@@ -56,11 +50,10 @@ class GameContainerComponent extends StatelessWidget {
     if (betResultAwaiting) {
       return const CoinAnimationComponent();
     } else if (betResult.isEmpty) {
-      // Show default state when no result is set
-      return const HeadsComponent(); // or any other default view you prefer
+      return const HeadsComponent();
     } else {
-      return betResult == "heads" 
-          ? const HeadsComponent() 
+      return betResult == "heads"
+          ? const HeadsComponent()
           : const TailsComponent();
     }
   }
@@ -68,15 +61,12 @@ class GameContainerComponent extends StatelessWidget {
   Widget _buildWinningOverlay() {
     return Center(
       child: Container(
-        height: 144, // 36 * 4 (converting from rem/tailwind units)
-        width: 160, // 40 * 4
+        height: 144,
+        width: 160,
         decoration: BoxDecoration(
           color: const Color(0xFF0F212E),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: const Color(0xFF00E701),
-            width: 6,
-          ),
+          border: Border.all(color: const Color(0xFF00E701), width: 6),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -90,11 +80,7 @@ class GameContainerComponent extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-            Container(
-              height: 1,
-              width: 64, // 40% of container width
-              color: const Color(0xFF2F4553),
-            ),
+            Container(height: 1, width: 64, color: const Color(0xFF2F4553)),
             const SizedBox(height: 12),
             Text(
               "₹${amountWon.toStringAsFixed(2)}",
@@ -118,7 +104,8 @@ class CoinAnimationComponent extends StatefulWidget {
   State<CoinAnimationComponent> createState() => _CoinAnimationComponentState();
 }
 
-class _CoinAnimationComponentState extends State<CoinAnimationComponent> with SingleTickerProviderStateMixin {
+class _CoinAnimationComponentState extends State<CoinAnimationComponent>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
 
@@ -128,11 +115,11 @@ class _CoinAnimationComponentState extends State<CoinAnimationComponent> with Si
     _controller = AnimationController(
       duration: const Duration(seconds: 1),
       vsync: this,
-    )..repeat(); // Makes the animation repeat infinitely
+    )..repeat();
 
     _animation = Tween<double>(
       begin: 0,
-      end: 2 * 3.14159, // Full rotation (360 degrees in radians)
+      end: 2 * 3.14159, // 360 DEGREES ROTATION
     ).animate(_controller);
   }
 
@@ -144,18 +131,15 @@ class _CoinAnimationComponentState extends State<CoinAnimationComponent> with Si
 
   @override
   Widget build(BuildContext context) {
-    // Get the screen width to make responsive sizes
     double screenWidth = MediaQuery.of(context).size.width;
-    
-    // Determine size based on screen width
-    double size = 192; // Default size (w-48 = 12rem = 192px)
-    
-    if (screenWidth > 640) { // sm and above
-      size = 288; // w-72 = 18rem = 288px
+    double size = 192;
+
+    if (screenWidth > 640) {
+      size = 288;
     }
-    
-    if (screenWidth > 1536) { // 2xl
-      size = 320; // w-80 = 20rem = 320px
+
+    if (screenWidth > 1536) {
+      size = 320;
     }
 
     return SizedBox(
@@ -165,17 +149,19 @@ class _CoinAnimationComponentState extends State<CoinAnimationComponent> with Si
         animation: _animation,
         builder: (context, child) {
           return Transform(
-            transform: Matrix4.identity()
-              ..setEntry(3, 2, 0.001) // perspective
-              ..rotateY(_animation.value),
+            transform:
+                Matrix4.identity()
+                  ..setEntry(3, 2, 0.001) // PERSPECTIVE
+                  ..rotateY(_animation.value),
             alignment: Alignment.center,
-            child: _animation.value < 3.14159 
-                ? const HeadsComponent() 
-                : Transform(
-                    transform: Matrix4.identity()..rotateY(3.14159),
-                    alignment: Alignment.center,
-                    child: const TailsComponent(),
-                  ),
+            child:
+                _animation.value < 3.14159
+                    ? const HeadsComponent()
+                    : Transform(
+                      transform: Matrix4.identity()..rotateY(3.14159),
+                      alignment: Alignment.center,
+                      child: const TailsComponent(),
+                    ),
           );
         },
       ),
@@ -188,21 +174,18 @@ class HeadsComponent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Get the screen width to make responsive sizes
     double screenWidth = MediaQuery.of(context).size.width;
-    
-    // Determine size based on screen width
-    double size = 192; // Default size (w-48 = 12rem = 192px)
-    double innerPadding = 56; // Default padding (inset-14 = 3.5rem = 56px)
-    
-    if (screenWidth > 640) { // sm and above
-      size = 288; // w-72 = 18rem = 288px
-      innerPadding = 80; // inset-20 = 5rem = 80px
+    double size = 192;
+    double innerPadding = 56;
+
+    if (screenWidth > 640) {
+      size = 288;
+      innerPadding = 80;
     }
-    
-    if (screenWidth > 1536) { // 2xl
-      size = 320; // w-80 = 20rem = 320px
-      innerPadding = 112; // inset-28 = 7rem = 112px
+
+    if (screenWidth > 1536) {
+      size = 320;
+      innerPadding = 112;
     }
 
     return SizedBox(
@@ -210,15 +193,13 @@ class HeadsComponent extends StatelessWidget {
       height: size,
       child: Stack(
         children: [
-          // Outer circle
           Container(
             decoration: const BoxDecoration(
               color: Colors.orange,
               shape: BoxShape.circle,
             ),
           ),
-          
-          // Inner circle
+
           Padding(
             padding: EdgeInsets.all(innerPadding),
             child: Container(
@@ -239,21 +220,18 @@ class TailsComponent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Get the screen width to make responsive sizes
     double screenWidth = MediaQuery.of(context).size.width;
-    
-    // Determine size based on screen width
-    double size = 192; // Default size (w-48 = 12rem = 192px)
-    double innerPadding = 64; // Default padding (inset-16 = 4rem = 64px)
-    
-    if (screenWidth > 640) { // sm and above
-      size = 288; // w-72 = 18rem = 288px
-      innerPadding = 96; // inset-24 = 6rem = 96px
+    double size = 192;
+    double innerPadding = 64;
+
+    if (screenWidth > 640) {
+      size = 288;
+      innerPadding = 96;
     }
-    
-    if (screenWidth > 1536) { // 2xl
-      size = 320; // w-80 = 20rem = 320px
-      innerPadding = 112; // inset-28 = 7rem = 112px
+
+    if (screenWidth > 1536) {
+      size = 320;
+      innerPadding = 112;
     }
 
     return SizedBox(
@@ -261,23 +239,19 @@ class TailsComponent extends StatelessWidget {
       height: size,
       child: Stack(
         children: [
-          // Outer circle
           Container(
             decoration: const BoxDecoration(
               color: Color(0xFF4D6FFF),
               shape: BoxShape.circle,
             ),
           ),
-          
-          // Inner square (rotated)
+
           Padding(
             padding: EdgeInsets.all(innerPadding),
             child: Transform.rotate(
               angle: 45 * 3.14159 / 180,
               child: Container(
-                decoration: const BoxDecoration(
-                  color: Color(0xFF0F212E),
-                ),
+                decoration: const BoxDecoration(color: Color(0xFF0F212E)),
               ),
             ),
           ),
@@ -290,15 +264,12 @@ class TailsComponent extends StatelessWidget {
 class HistoryComponent extends StatelessWidget {
   final List<String> currentBetResults;
 
-  const HistoryComponent({
-    super.key,
-    required this.currentBetResults,
-  });
+  const HistoryComponent({super.key, required this.currentBetResults});
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 96, // h-24 = 6rem = 96px
+      height: 96,
       width: double.infinity,
       decoration: BoxDecoration(
         color: const Color(0xFF213743),
@@ -332,10 +303,11 @@ class HistoryComponent extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: List.generate(20, (index) {
-                final result = index < currentBetResults.length 
-                    ? currentBetResults[index] 
-                    : null;
-                
+                final result =
+                    index < currentBetResults.length
+                        ? currentBetResults[index]
+                        : null;
+
                 return _buildHistoryItem(result);
               }),
             ),
@@ -369,11 +341,7 @@ class HistoryComponent extends StatelessWidget {
     } else {
       return Transform.rotate(
         angle: 45 * 3.14159 / 180,
-        child: Container(
-          width: 8,
-          height: 8,
-          color: const Color(0xFF4D6FFF),
-        ),
+        child: Container(width: 8, height: 8, color: const Color(0xFF4D6FFF)),
       );
     }
   }

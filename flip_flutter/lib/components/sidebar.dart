@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart'; // For local storage
-// import 'package:audioplayers/audioplayers.dart'; // For sound effects
+import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:math' show pow, pi, max, Random;
 
 class SidebarComponent extends StatefulWidget {
@@ -10,7 +9,8 @@ class SidebarComponent extends StatefulWidget {
     required bool isBetEnded,
     required double amountWon,
     required double multiplier,
-  }) onGameStateUpdate;
+  })
+  onGameStateUpdate;
   final Function(double newBalance) onWalletBalanceUpdate;
 
   const SidebarComponent({
@@ -24,7 +24,7 @@ class SidebarComponent extends StatefulWidget {
 }
 
 class _SidebarComponentState extends State<SidebarComponent> {
-  // State variables
+  // STATES
   bool isBetStarted = false;
   double betAmount = 0.0;
   bool isFirstClick = true;
@@ -34,22 +34,12 @@ class _SidebarComponentState extends State<SidebarComponent> {
   int numberOfBets = 0;
   double amountWon = 0.0;
   final TextEditingController betAmountController = TextEditingController();
-  
-  // Audio players
-  // final AudioPlayer betSoundPlayer = AudioPlayer();
-  // final AudioPlayer cashoutSoundPlayer = AudioPlayer();
 
   @override
   void initState() {
     super.initState();
     loadWalletBalance();
-    // setupAudioPlayers();
   }
-
-  // Future<void> setupAudioPlayers() async {
-  //   await betSoundPlayer.setSource(AssetSource('betButtonSound.mp3'));
-  //   await cashoutSoundPlayer.setSource(AssetSource('cashoutSound.mp3'));
-  // }
 
   Future<void> loadWalletBalance() async {
     final prefs = await SharedPreferences.getInstance();
@@ -67,7 +57,11 @@ class _SidebarComponentState extends State<SidebarComponent> {
     }
     if (betAmount > walletBalance) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Cannot place bet higher than your wallet balance. Please deposit!")),
+        const SnackBar(
+          content: Text(
+            "Cannot place bet higher than your wallet balance. Please deposit!",
+          ),
+        ),
       );
       return;
     }
@@ -76,29 +70,27 @@ class _SidebarComponentState extends State<SidebarComponent> {
       walletBalance -= betAmount;
       isBetStarted = true;
     });
-    
-    // Update parent component about wallet balance change
+
     widget.onWalletBalanceUpdate(walletBalance);
-    
-    // Reset game state to clear winning screen, using empty string for betResult
+
+    // RESETTING EVERY STATE WHEN BET BUTTON CLICKED
     widget.onGameStateUpdate(
-      betResult: "", // Changed from "heads" to empty string
+      betResult: "",
       betResultAwaiting: false,
       isBetEnded: false,
       amountWon: 0.0,
       multiplier: 0.0,
     );
-    
+
     saveWalletBalance();
   }
 
   Future<void> handleOptionClick(String option) async {
-    // Update awaiting state
     setState(() {
       isFirstClick = false;
       betResultAwaiting = true;
     });
-    
+
     widget.onGameStateUpdate(
       betResult: "",
       betResultAwaiting: true,
@@ -107,41 +99,39 @@ class _SidebarComponentState extends State<SidebarComponent> {
       multiplier: pow(1.96, numberOfBets).toDouble(),
     );
 
-    // If random is selected, randomly choose heads or tails
+    // IF USER SELECTS RANDOM, CHOOSE RANDOMLY
     if (option == "random") {
       option = Random().nextInt(2) == 0 ? "heads" : "tails";
     }
 
-    // Simulate delay for animation
+    // DELAY TO SHOW COIN ANIMATION
     await Future.delayed(const Duration(seconds: 1));
-    
-    // Generate result (0 for heads, 1 for tails)
+
+    // 0 -> HEADS, 1-> TAILS
     final result = Random().nextInt(2) == 0 ? "heads" : "tails";
-    
-    // First update the game container with the result
+
     widget.onGameStateUpdate(
       betResult: result,
       betResultAwaiting: false,
       isBetEnded: result != option || numberOfBets >= 20,
-      amountWon: result == option ? betAmount * pow(1.96, numberOfBets + 1) : 0.0,
-      multiplier: result == option ? pow(1.96, numberOfBets + 1).toDouble() : 0.0,
+      amountWon:
+          result == option ? betAmount * pow(1.96, numberOfBets + 1) : 0.0,
+      multiplier:
+          result == option ? pow(1.96, numberOfBets + 1).toDouble() : 0.0,
     );
 
-    // Then update the local state
     if (result == option) {
-      // User won
       setState(() {
         betResultAwaiting = false;
         currentBetResults.add(result);
         numberOfBets++;
         amountWon = betAmount * pow(1.96, numberOfBets);
       });
-      
+
       if (numberOfBets >= 20) {
         endBet(true);
       }
     } else {
-      // User lost - update state and end bet
       setState(() {
         betResultAwaiting = false;
         currentBetResults.add(result);
@@ -154,11 +144,10 @@ class _SidebarComponentState extends State<SidebarComponent> {
     setState(() {
       if (won) {
         walletBalance += amountWon;
-        // Notify parent about wallet balance change
         widget.onWalletBalanceUpdate(walletBalance);
         saveWalletBalance();
       }
-      
+
       isBetStarted = false;
       isFirstClick = true;
       numberOfBets = 0;
@@ -176,7 +165,6 @@ class _SidebarComponentState extends State<SidebarComponent> {
   }
 
   void handleCashout() {
-    // First update the game container to show the winning screen
     widget.onGameStateUpdate(
       betResult: currentBetResults.last,
       betResultAwaiting: false,
@@ -185,7 +173,6 @@ class _SidebarComponentState extends State<SidebarComponent> {
       multiplier: pow(1.96, numberOfBets).toDouble(),
     );
 
-    // Then update the local state
     setState(() {
       walletBalance += amountWon;
       isBetStarted = false;
@@ -194,8 +181,7 @@ class _SidebarComponentState extends State<SidebarComponent> {
       currentBetResults = [];
       amountWon = 0.0;
     });
-    
-    // Notify parent about wallet balance change
+
     widget.onWalletBalanceUpdate(walletBalance);
     saveWalletBalance();
   }
@@ -209,7 +195,9 @@ class _SidebarComponentState extends State<SidebarComponent> {
     final newAmount = betAmount * 2;
     if (newAmount > walletBalance) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Cannot double bet amount beyond wallet balance")),
+        const SnackBar(
+          content: Text("Cannot double bet amount beyond wallet balance"),
+        ),
       );
       return;
     }
@@ -226,25 +214,25 @@ class _SidebarComponentState extends State<SidebarComponent> {
       padding: const EdgeInsets.all(16),
       child: Column(
         children: [
-          // Bet Amount Input Section
+          // BET AMOUNT COMPONENT
           _buildBetAmountSection(),
-          
+
           // Profit Box
           if (isBetStarted) _buildProfitBox(),
-          
+
           const SizedBox(height: 16),
-          
-          // Random Pick Button
+
+          // RANDOM PICK BUTTON
           _buildRandomPickButton(),
-          
+
           const SizedBox(height: 16),
-          
-          // Heads/Tails Buttons
+
+          // HEADS TAILS BUTTON
           _buildHeadsTailsButtons(),
-          
+
           const SizedBox(height: 16),
-          
-          // Bet/Cashout Button
+
+          // BET/CASHOUT BUTTON
           _buildBetButton(),
         ],
       ),
@@ -297,10 +285,15 @@ class _SidebarComponentState extends State<SidebarComponent> {
                       double newAmount = double.tryParse(value) ?? 0.0;
                       if (newAmount > walletBalance) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text("Cannot enter amount greater than wallet balance")),
+                          const SnackBar(
+                            content: Text(
+                              "Cannot enter amount greater than wallet balance",
+                            ),
+                          ),
                         );
                         newAmount = walletBalance;
-                        betAmountController.text = walletBalance.toStringAsFixed(2);
+                        betAmountController.text = walletBalance
+                            .toStringAsFixed(2);
                       }
                       setState(() {
                         betAmount = newAmount;
@@ -336,9 +329,7 @@ class _SidebarComponentState extends State<SidebarComponent> {
         style: TextButton.styleFrom(
           backgroundColor: const Color(0xFF2F4553),
           padding: EdgeInsets.zero,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.zero,
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero),
         ),
         child: Text(
           text,
@@ -390,15 +381,14 @@ class _SidebarComponentState extends State<SidebarComponent> {
 
   Widget _buildRandomPickButton() {
     return ElevatedButton(
-      onPressed: (!isBetStarted || betResultAwaiting) 
-          ? null 
-          : () => handleOptionClick("random"),
+      onPressed:
+          (!isBetStarted || betResultAwaiting)
+              ? null
+              : () => handleOptionClick("random"),
       style: ElevatedButton.styleFrom(
         backgroundColor: const Color(0xFF283E4B),
         minimumSize: const Size(double.infinity, 48),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(4),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
       ),
       child: const Text(
         'Pick Random Side',
@@ -416,9 +406,10 @@ class _SidebarComponentState extends State<SidebarComponent> {
       children: [
         Expanded(
           child: ElevatedButton(
-            onPressed: (!isBetStarted || betResultAwaiting)
-                ? null
-                : () => handleOptionClick("heads"),
+            onPressed:
+                (!isBetStarted || betResultAwaiting)
+                    ? null
+                    : () => handleOptionClick("heads"),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF283E4B),
               minimumSize: const Size(double.infinity, 48),
@@ -453,9 +444,10 @@ class _SidebarComponentState extends State<SidebarComponent> {
         const SizedBox(width: 8),
         Expanded(
           child: ElevatedButton(
-            onPressed: (!isBetStarted || betResultAwaiting)
-                ? null
-                : () => handleOptionClick("tails"),
+            onPressed:
+                (!isBetStarted || betResultAwaiting)
+                    ? null
+                    : () => handleOptionClick("tails"),
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF283E4B),
               minimumSize: const Size(double.infinity, 48),
@@ -492,28 +484,23 @@ class _SidebarComponentState extends State<SidebarComponent> {
   }
 
   Widget _buildBetButton() {
-    final bool isDisabled = isBetStarted ? (isFirstClick || betResultAwaiting) : false;
-    
     return ElevatedButton(
-      onPressed: isBetStarted
-          ? (isFirstClick || betResultAwaiting ? null : handleCashout)
-          : handleBetStart,
+      onPressed:
+          isBetStarted
+              ? (isFirstClick || betResultAwaiting ? null : handleCashout)
+              : handleBetStart,
       style: ButtonStyle(
-        backgroundColor: WidgetStateProperty.resolveWith<Color>(
-          (Set<WidgetState> states) {
-            if (states.contains(WidgetState.disabled)) {
-              return const Color(0xFF006400); // Darker green when disabled
-            }
-            return const Color(0xFF00E701); // Original green when enabled
-          },
-        ),
-        minimumSize: WidgetStateProperty.all(
-          const Size(double.infinity, 48),
-        ),
+        backgroundColor: WidgetStateProperty.resolveWith<Color>((
+          Set<WidgetState> states,
+        ) {
+          if (states.contains(WidgetState.disabled)) {
+            return const Color(0xFF006400);
+          }
+          return const Color(0xFF00E701);
+        }),
+        minimumSize: WidgetStateProperty.all(const Size(double.infinity, 48)),
         shape: WidgetStateProperty.all(
-          RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(4),
-          ),
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
         ),
       ),
       child: Text(
