@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'components/header.dart';
 import 'components/sidebar.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'components/game_container.dart';
 
 void main() {
@@ -38,6 +39,19 @@ class _MyHomePageState extends State<MyHomePage> {
   double multiplier = 0.0;
   double walletBalance = 10000.0;
   List<String> currentBetResults = [];
+
+  @override
+  void initState() {
+    super.initState();
+    loadWalletBalance();
+  }
+
+  Future<void> loadWalletBalance() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      walletBalance = prefs.getDouble('walletBalance') ?? 10000.0;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -86,6 +100,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         walletBalance = newBalance;
                       });
                     },
+                    initialWalletBalance: walletBalance,
                   ),
                 ),
 

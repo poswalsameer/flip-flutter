@@ -12,11 +12,13 @@ class SidebarComponent extends StatefulWidget {
   })
   onGameStateUpdate;
   final Function(double newBalance) onWalletBalanceUpdate;
+  final double initialWalletBalance;
 
   const SidebarComponent({
     super.key,
     required this.onGameStateUpdate,
     required this.onWalletBalanceUpdate,
+    required this.initialWalletBalance,
   });
 
   @override
@@ -28,7 +30,7 @@ class _SidebarComponentState extends State<SidebarComponent> {
   bool isBetStarted = false;
   double betAmount = 0.0;
   bool isFirstClick = true;
-  double walletBalance = 10000.0;
+  late double walletBalance;
   List<String> currentBetResults = [];
   bool betResultAwaiting = false;
   int numberOfBets = 0;
@@ -38,14 +40,17 @@ class _SidebarComponentState extends State<SidebarComponent> {
   @override
   void initState() {
     super.initState();
-    loadWalletBalance();
+    walletBalance = widget.initialWalletBalance;
   }
 
-  Future<void> loadWalletBalance() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      walletBalance = prefs.getDouble('walletBalance') ?? 10000.0;
-    });
+  @override
+  void didUpdateWidget(SidebarComponent oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialWalletBalance != widget.initialWalletBalance) {
+      setState(() {
+        walletBalance = widget.initialWalletBalance;
+      });
+    }
   }
 
   void handleBetStart() {
