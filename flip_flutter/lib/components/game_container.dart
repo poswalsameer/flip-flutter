@@ -6,6 +6,7 @@ class GameContainerComponent extends StatelessWidget {
   final bool isBetEnded;
   final double amountWon;
   final double multiplier;
+  final List<String> currentBetResults;
 
   const GameContainerComponent({
     super.key,
@@ -14,6 +15,7 @@ class GameContainerComponent extends StatelessWidget {
     required this.isBetEnded,
     required this.amountWon,
     required this.multiplier,
+    required this.currentBetResults,
   });
 
   @override
@@ -32,13 +34,14 @@ class GameContainerComponent extends StatelessWidget {
                 ),
               ),
 
-              // Bottom history part (placeholder)
+              // Bottom history part
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Container(
-                  // History component will go here
+                child: HistoryComponent(
+                  currentBetResults: currentBetResults,
                 ),
               ),
+              const SizedBox(height: 16), // Add some bottom padding
             ],
           ),
 
@@ -217,5 +220,97 @@ class TailsComponent extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class HistoryComponent extends StatelessWidget {
+  final List<String> currentBetResults;
+
+  const HistoryComponent({
+    super.key,
+    required this.currentBetResults,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 96, // h-24 = 6rem = 96px
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: const Color(0xFF213743),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Padding(
+            padding: EdgeInsets.only(left: 2),
+            child: Text(
+              'History',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Container(
+            height: 40,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: const Color(0xFF071D2A),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: List.generate(20, (index) {
+                final result = index < currentBetResults.length 
+                    ? currentBetResults[index] 
+                    : null;
+                
+                return _buildHistoryItem(result);
+              }),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildHistoryItem(String? result) {
+    if (result == null) {
+      return Container(
+        width: 12,
+        height: 12,
+        decoration: const BoxDecoration(
+          color: Color(0xFF0F212E),
+          shape: BoxShape.circle,
+        ),
+      );
+    }
+
+    if (result == 'heads') {
+      return Container(
+        width: 12,
+        height: 12,
+        decoration: const BoxDecoration(
+          color: Colors.orange,
+          shape: BoxShape.circle,
+        ),
+      );
+    } else {
+      return Transform.rotate(
+        angle: 45 * 3.14159 / 180,
+        child: Container(
+          width: 8,
+          height: 8,
+          color: const Color(0xFF4D6FFF),
+        ),
+      );
+    }
   }
 }

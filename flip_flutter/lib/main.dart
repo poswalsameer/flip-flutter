@@ -53,6 +53,7 @@ class _MyHomePageState extends State<MyHomePage> {
   double amountWon = 0.0;
   double multiplier = 0.0;
   double walletBalance = 10000.0;
+  List<String> currentBetResults = [];
 
   @override
   Widget build(BuildContext context) {
@@ -83,6 +84,20 @@ class _MyHomePageState extends State<MyHomePage> {
                         this.isBetEnded = isBetEnded;
                         this.amountWon = amountWon;
                         this.multiplier = multiplier;
+                        
+                        // Add the new result to history if it's not empty
+                        if (betResult.isNotEmpty) {
+                          currentBetResults = [...currentBetResults, betResult];
+                          // Keep only the last 20 results
+                          if (currentBetResults.length > 20) {
+                            currentBetResults = currentBetResults.sublist(currentBetResults.length - 20);
+                          }
+                        }
+                        
+                        // Clear history when bet ends
+                        if (isBetEnded) {
+                          currentBetResults = [];
+                        }
                       });
                     },
                     onWalletBalanceUpdate: (newBalance) {
@@ -101,6 +116,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     isBetEnded: isBetEnded,
                     amountWon: amountWon,
                     multiplier: multiplier,
+                    currentBetResults: currentBetResults,
                   ),
                 ),
               ],
