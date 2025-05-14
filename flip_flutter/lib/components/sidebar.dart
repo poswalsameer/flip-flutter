@@ -160,10 +160,25 @@ class _SidebarComponentState extends State<SidebarComponent> {
   }
 
   void handleCashout() {
+    // First update the game container to show the winning screen
+    widget.onGameStateUpdate(
+      betResult: currentBetResults.last,
+      betResultAwaiting: false,
+      isBetEnded: true,
+      amountWon: amountWon,
+      multiplier: pow(1.96, numberOfBets).toDouble(),
+    );
+
+    // Then update the local state
     setState(() {
       walletBalance += amountWon;
-      endBet(true);
+      isBetStarted = false;
+      isFirstClick = true;
+      numberOfBets = 0;
+      currentBetResults = [];
+      amountWon = 0.0;
     });
+    
     saveWalletBalance();
   }
 
