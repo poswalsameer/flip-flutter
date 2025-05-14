@@ -52,14 +52,15 @@ class _MyHomePageState extends State<MyHomePage> {
   bool isBetEnded = false;
   double amountWon = 0.0;
   double multiplier = 0.0;
+  double walletBalance = 10000.0;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Column(
         children: [
-          // Header takes its natural height
-          const HeaderComponent(),
+          // Pass wallet balance to header
+          HeaderComponent(walletBalance: walletBalance),
           
           // Main content area takes remaining height
           Expanded(
@@ -82,6 +83,11 @@ class _MyHomePageState extends State<MyHomePage> {
                         this.isBetEnded = isBetEnded;
                         this.amountWon = amountWon;
                         this.multiplier = multiplier;
+                      });
+                    },
+                    onWalletBalanceUpdate: (newBalance) {
+                      setState(() {
+                        walletBalance = newBalance;
                       });
                     },
                   ),

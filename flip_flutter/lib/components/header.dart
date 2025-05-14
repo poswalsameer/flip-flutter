@@ -2,13 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart'; // You'll need to add provider package to pubspec.yaml
 
 class HeaderComponent extends StatelessWidget {
-  const HeaderComponent({super.key});
+  final double walletBalance;
+
+  const HeaderComponent({
+    super.key,
+    required this.walletBalance,
+  });
 
   @override
   Widget build(BuildContext context) {
-    // TODO: Replace this with your actual wallet balance state management
-    final double walletBalance = 0.0; // This should be replaced with your state management solution
-
     return Container(
       width: double.infinity,
       height: 64, // equivalent to h-16

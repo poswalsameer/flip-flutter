@@ -11,10 +11,12 @@ class SidebarComponent extends StatefulWidget {
     required double amountWon,
     required double multiplier,
   }) onGameStateUpdate;
+  final Function(double newBalance) onWalletBalanceUpdate;
 
   const SidebarComponent({
     super.key,
     required this.onGameStateUpdate,
+    required this.onWalletBalanceUpdate,
   });
 
   @override
@@ -57,7 +59,7 @@ class _SidebarComponentState extends State<SidebarComponent> {
   }
 
   void handleBetStart() {
-    if (betAmount < 0) {
+    if (betAmount <= 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text("Cannot place a bet less than Rs.0")),
       );
@@ -72,10 +74,13 @@ class _SidebarComponentState extends State<SidebarComponent> {
 
     setState(() {
       walletBalance -= betAmount;
-      isBetStarted = !isBetStarted;
+      isBetStarted = true;
     });
+    
+    // Update parent component about wallet balance change
+    widget.onWalletBalanceUpdate(walletBalance);
+    
     saveWalletBalance();
-    // betSoundPlayer.resume();
   }
 
   Future<void> handleOptionClick(String option) async {
@@ -140,6 +145,8 @@ class _SidebarComponentState extends State<SidebarComponent> {
     setState(() {
       if (won) {
         walletBalance += amountWon;
+        // Notify parent about wallet balance change
+        widget.onWalletBalanceUpdate(walletBalance);
         saveWalletBalance();
       }
       
@@ -179,12 +186,28 @@ class _SidebarComponentState extends State<SidebarComponent> {
       amountWon = 0.0;
     });
     
+    // Notify parent about wallet balance change
+    widget.onWalletBalanceUpdate(walletBalance);
     saveWalletBalance();
   }
 
   Future<void> saveWalletBalance() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setDouble('walletBalance', walletBalance);
+  }
+
+  void handleDoubleAmount() {
+    final newAmount = betAmount * 2;
+    if (newAmount > walletBalance) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Cannot double bet amount beyond wallet balance")),
+      );
+      return;
+    }
+    setState(() {
+      betAmount = newAmount;
+      betAmountController.text = newAmount.toStringAsFixed(2);
+    });
   }
 
   @override
@@ -242,21 +265,39 @@ class _SidebarComponentState extends State<SidebarComponent> {
             children: [
               Expanded(
                 flex: 7,
-                child: TextField(
-                  controller: betAmountController,
-                  enabled: !isBetStarted,
-                  keyboardType: TextInputType.number,
-                  style: const TextStyle(color: Colors.white),
-                  decoration: const InputDecoration(
-                    filled: true,
-                    fillColor: Color(0xFF0F212E),
-                    border: InputBorder.none,
+                child: Container(
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF0F212E),
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(4),
+                      bottomLeft: Radius.circular(4),
+                    ),
                   ),
-                  onChanged: (value) {
-                    setState(() {
-                      betAmount = double.tryParse(value) ?? 0.0;
-                    });
-                  },
+                  child: TextField(
+                    controller: betAmountController,
+                    enabled: !isBetStarted,
+                    keyboardType: TextInputType.number,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: const InputDecoration(
+                      filled: true,
+                      fillColor: Color(0xFF0F212E),
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12),
+                    ),
+                    onChanged: (value) {
+                      double newAmount = double.tryParse(value) ?? 0.0;
+                      if (newAmount > walletBalance) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text("Cannot enter amount greater than wallet balance")),
+                        );
+                        newAmount = walletBalance;
+                        betAmountController.text = walletBalance.toStringAsFixed(2);
+                      }
+                      setState(() {
+                        betAmount = newAmount;
+                      });
+                    },
+                  ),
                 ),
               ),
               _buildAmountButton("1/2", () {
@@ -442,15 +483,28 @@ class _SidebarComponentState extends State<SidebarComponent> {
   }
 
   Widget _buildBetButton() {
+    final bool isDisabled = isBetStarted ? (isFirstClick || betResultAwaiting) : false;
+    
     return ElevatedButton(
       onPressed: isBetStarted
           ? (isFirstClick || betResultAwaiting ? null : handleCashout)
           : handleBetStart,
-      style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(0xFF00E701),
-        minimumSize: const Size(double.infinity, 48),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(4),
+      style: ButtonStyle(
+        backgroundColor: WidgetStateProperty.resolveWith<Color>(
+          (Set<WidgetState> states) {
+            if (states.contains(WidgetState.disabled)) {
+              return const Color(0xFF006400); // Darker green when disabled
+            }
+            return const Color(0xFF00E701); // Original green when enabled
+          },
+        ),
+        minimumSize: WidgetStateProperty.all(
+          const Size(double.infinity, 48),
+        ),
+        shape: WidgetStateProperty.all(
+          RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(4),
+          ),
         ),
       ),
       child: Text(
