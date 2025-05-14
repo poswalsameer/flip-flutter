@@ -108,14 +108,75 @@ class GameContainerComponent extends StatelessWidget {
   }
 }
 
-// Placeholder components - you'll need to implement these
-class CoinAnimationComponent extends StatelessWidget {
+class CoinAnimationComponent extends StatefulWidget {
   const CoinAnimationComponent({super.key});
 
   @override
+  State<CoinAnimationComponent> createState() => _CoinAnimationComponentState();
+}
+
+class _CoinAnimationComponentState extends State<CoinAnimationComponent> with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      duration: const Duration(seconds: 1),
+      vsync: this,
+    )..repeat(); // Makes the animation repeat infinitely
+
+    _animation = Tween<double>(
+      begin: 0,
+      end: 2 * 3.14159, // Full rotation (360 degrees in radians)
+    ).animate(_controller);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    // Implement coin animation
-    return const Center(child: CircularProgressIndicator());
+    // Get the screen width to make responsive sizes
+    double screenWidth = MediaQuery.of(context).size.width;
+    
+    // Determine size based on screen width
+    double size = 192; // Default size (w-48 = 12rem = 192px)
+    
+    if (screenWidth > 640) { // sm and above
+      size = 288; // w-72 = 18rem = 288px
+    }
+    
+    if (screenWidth > 1536) { // 2xl
+      size = 320; // w-80 = 20rem = 320px
+    }
+
+    return SizedBox(
+      width: size,
+      height: size,
+      child: AnimatedBuilder(
+        animation: _animation,
+        builder: (context, child) {
+          return Transform(
+            transform: Matrix4.identity()
+              ..setEntry(3, 2, 0.001) // perspective
+              ..rotateY(_animation.value),
+            alignment: Alignment.center,
+            child: _animation.value < 3.14159 
+                ? const HeadsComponent() 
+                : Transform(
+                    transform: Matrix4.identity()..rotateY(3.14159),
+                    alignment: Alignment.center,
+                    child: const TailsComponent(),
+                  ),
+          );
+        },
+      ),
+    );
   }
 }
 
