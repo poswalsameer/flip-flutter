@@ -80,6 +80,15 @@ class _SidebarComponentState extends State<SidebarComponent> {
     // Update parent component about wallet balance change
     widget.onWalletBalanceUpdate(walletBalance);
     
+    // Reset game state to clear winning screen, using empty string for betResult
+    widget.onGameStateUpdate(
+      betResult: "", // Changed from "heads" to empty string
+      betResultAwaiting: false,
+      isBetEnded: false,
+      amountWon: 0.0,
+      multiplier: 0.0,
+    );
+    
     saveWalletBalance();
   }
 

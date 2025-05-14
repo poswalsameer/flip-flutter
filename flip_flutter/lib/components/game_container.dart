@@ -55,6 +55,9 @@ class GameContainerComponent extends StatelessWidget {
   Widget _buildCoinArea() {
     if (betResultAwaiting) {
       return const CoinAnimationComponent();
+    } else if (betResult.isEmpty) {
+      // Show default state when no result is set
+      return const HeadsComponent(); // or any other default view you prefer
     } else {
       return betResult == "heads" 
           ? const HeadsComponent() 
